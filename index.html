@@ -514,23 +514,192 @@
             color: #999;
         }
 
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0;
+            }
+
+            body::before {
+                display: none !important;
+            }
+
+            .header, .upload-section, .processing, .debug-section, .export-section, .error-message, .success-message {
+                display: none !important;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 20px;
+            }
+
+            .print-header {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 30px;
+                border-bottom: 2px solid #000;
+                padding-bottom: 20px;
+            }
+
+            .print-header h1 {
+                color: black !important;
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            .print-header .print-meta {
+                color: #666;
+                font-size: 14px;
+            }
+
+            .summary-cards {
+                display: grid !important;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 0;
+                margin-bottom: 30px;
+                page-break-after: auto;
+            }
+
+            .summary-card {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                border-radius: 0 !important;
+                padding: 20px;
+                margin: -1px;
+            }
+
+            .summary-card h3 {
+                color: black !important;
+                -webkit-text-fill-color: black !important;
+                font-size: 28px;
+            }
+
+            .summary-card p {
+                color: #666 !important;
+            }
+
+            .model-breakdown {
+                page-break-before: auto;
+                margin: 30px 0;
+            }
+
+            .model-category {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                margin-bottom: 10px;
+                page-break-inside: avoid;
+            }
+
+            .model-category h3, .model-category p {
+                color: black !important;
+            }
+
+            .model-count {
+                background: #f0f0f0 !important;
+                color: black !important;
+            }
+
+            .vehicles-table {
+                background: white !important;
+                border: 1px solid #ddd !important;
+                page-break-before: auto;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            th {
+                background: #f8f8f8 !important;
+                color: black !important;
+                border: 1px solid #ddd !important;
+                padding: 10px;
+                font-weight: bold;
+            }
+
+            td {
+                color: black !important;
+                border: 1px solid #ddd !important;
+                padding: 8px;
+            }
+
+            .color-badge {
+                background: #f0f0f0 !important;
+                color: black !important;
+                border: 1px solid #ddd !important;
+            }
+
+            tr:hover {
+                background: white !important;
+            }
+
+            .hide-on-print {
+                display: none !important;
+            }
+
+            .print-only {
+                display: block !important;
+            }
         }
 
-        ::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.02);
+        .print-header {
+            display: none;
         }
 
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
+        /* Print button styles */
+        .print-button {
+            background: transparent;
+            color: #999;
+            padding: 14px 32px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            margin: 0 12px;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
         }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.2);
+        .print-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .print-button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .print-button:hover {
+            transform: translateY(-2px);
+            color: #ffffff;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .print-button.summary:hover {
+            border-color: rgba(236, 72, 153, 0.5);
+            color: #ec4899;
+            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.2);
+        }
+
+        .print-button.full:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            color: #8b5cf6;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
         }
     </style>
 </head>
@@ -569,6 +738,15 @@
         </div>
 
         <div class="results-section" id="resultsSection">
+            <div class="print-header">
+                <h1>LEXUS ALLOCATION REPORT</h1>
+                <div class="print-meta">
+                    <span id="printDealer"></span> | 
+                    <span id="printAllocation"></span> | 
+                    <span id="printDate"></span>
+                </div>
+            </div>
+
             <div class="summary-cards">
                 <div class="summary-card">
                     <h3 id="totalVehicles">0</h3>
@@ -591,6 +769,12 @@
             <div class="model-breakdown" id="modelBreakdown"></div>
 
             <div class="export-section">
+                <button class="print-button summary" onclick="printSummary()">
+                    🖨️ Print Summary
+                </button>
+                <button class="print-button full" onclick="printFull()">
+                    📋 Print Full Report
+                </button>
                 <button class="export-button csv" onclick="exportToCSV()">
                     📄 Export to CSV
                 </button>
@@ -599,7 +783,7 @@
                 </button>
             </div>
 
-            <div class="vehicles-table">
+            <div class="vehicles-table" id="vehiclesTable">
                 <table>
                     <thead>
                         <tr>
@@ -924,6 +1108,11 @@
             document.getElementById('allocation').textContent = data.allocation || 'N/A';
             document.getElementById('dealer').textContent = data.dealer.includes('-') ? data.dealer.split('-')[1].trim() : data.dealer;
 
+            // Update print header info
+            document.getElementById('printDealer').textContent = data.dealer;
+            document.getElementById('printAllocation').textContent = 'Allocation #' + data.allocation;
+            document.getElementById('printDate').textContent = new Date().toLocaleDateString();
+
             // Group vehicles by model category
             const modelGroups = {};
             data.vehicles.forEach(v => {
@@ -982,6 +1171,24 @@
             });
 
             resultsSection.style.display = 'block';
+        }
+
+        function printSummary() {
+            // Hide the vehicles table for summary print
+            const vehiclesTable = document.getElementById('vehiclesTable');
+            vehiclesTable.style.display = 'none';
+            
+            window.print();
+            
+            // Show the table again after printing
+            setTimeout(() => {
+                vehiclesTable.style.display = 'block';
+            }, 100);
+        }
+
+        function printFull() {
+            // Everything is visible for full print
+            window.print();
         }
 
         function getModelCategory(model) {
