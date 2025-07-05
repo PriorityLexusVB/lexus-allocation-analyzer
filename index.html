@@ -732,11 +732,6 @@
         <div class="error-message" id="errorMessage"></div>
         <div class="success-message" id="successMessage"></div>
 
-        <div class="debug-section" id="debugSection">
-            <h4>Debug Information</h4>
-            <div class="debug-content" id="debugContent"></div>
-        </div>
-
         <div class="results-section" id="resultsSection">
             <div class="print-header">
                 <h1>LEXUS ALLOCATION REPORT</h1>
@@ -963,8 +958,6 @@
         let processingStatus = document.getElementById('processingStatus');
         let errorMessage = document.getElementById('errorMessage');
         let successMessage = document.getElementById('successMessage');
-        let debugSection = document.getElementById('debugSection');
-        let debugContent = document.getElementById('debugContent');
         let currentData = null;
 
         // Drag and drop functionality
@@ -1019,10 +1012,6 @@
                     allText += pageText + '\n';
                 }
                 
-                // Debug output
-                debugContent.textContent = allText.substring(0, 2000) + '...';
-                debugSection.style.display = 'block';
-                
                 // Parse the allocation data
                 const allocationData = parseAllocationData(allText);
                 
@@ -1057,10 +1046,16 @@
                 data.allocation = allocMatch[1];
             }
             
-            // Extract dealer info
-            const dealerMatch = text.match(/Dealer:\s*([^\n]+)/i);
+            // Extract dealer info - look for PRIORITY LEXUS VIRGNA BCH pattern
+            const dealerMatch = text.match(/Dealer:\s*\d+-([^\n]+)/i);
             if (dealerMatch) {
-                data.dealer = dealerMatch[1].trim();
+                const dealerText = dealerMatch[1].trim();
+                // Convert abbreviated name to full name
+                if (dealerText.includes('PRIORITY LEXUS VIRGNA BCH') || dealerText.includes('PRIORITY LEXUS')) {
+                    data.dealer = 'PRIORITY LEXUS VIRGINIA BEACH';
+                } else {
+                    data.dealer = dealerText;
+                }
             }
             
             // Parse vehicle lines
@@ -1106,7 +1101,7 @@
             document.getElementById('totalVehicles').textContent = data.vehicles.length;
             document.getElementById('totalModels').textContent = new Set(data.vehicles.map(v => v.model.substring(0, 4))).size;
             document.getElementById('allocation').textContent = data.allocation || 'N/A';
-            document.getElementById('dealer').textContent = data.dealer.includes('-') ? data.dealer.split('-')[1].trim() : data.dealer;
+            document.getElementById('dealer').textContent = data.dealer;
 
             // Update print header info
             document.getElementById('printDealer').textContent = data.dealer;
