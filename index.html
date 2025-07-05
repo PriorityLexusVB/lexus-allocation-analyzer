@@ -985,20 +985,23 @@
         }
 
         function getModelCategory(model) {
-            const prefix = model.substring(0, 2);
-            const categories = {
-                '90': 'ES',
-                '91': 'LS',
-                '92': 'RC',
-                '93': 'TX',
-                '94': 'RX',
-                '95': 'IS',
-                '96': 'LX/GX',
-                '97': 'UX/GX',
-                '98': 'NX',
-                '99': 'RZ'
-            };
-            return categories[prefix] || 'Other';
+            const modelCode = model.substring(0, 4);
+            
+            // Check specific model codes first
+            if (modelCode >= '9000' && modelCode <= '9046') return 'ES';
+            if (modelCode >= '9120' && modelCode <= '9146') return 'LS';
+            if (modelCode >= '9202' && modelCode <= '9226') return 'RC';
+            if (modelCode >= '9260' && modelCode <= '9264') return 'LC';
+            if (modelCode >= '9350' && modelCode <= '9365') return 'TX';
+            if (modelCode >= '9400' && modelCode <= '9458') return 'RX';
+            if (modelCode >= '9502' && modelCode <= '9556') return 'IS';
+            if (modelCode >= '9620' && modelCode <= '9626') return 'LX';
+            if (modelCode >= '9701' && modelCode <= '9706') return 'GX';
+            if (modelCode >= '9721' && modelCode <= '9738') return 'UX';
+            if (modelCode >= '9820' && modelCode <= '9854') return 'NX';
+            if (modelCode >= '9902' && modelCode <= '9908') return 'RZ';
+            
+            return 'Other';
         }
 
         function exportToCSV() {
