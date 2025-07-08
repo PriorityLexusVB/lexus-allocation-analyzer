@@ -4,1334 +4,182 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lexus Allocation Analyzer</title>
-    <!-- PDF.js CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        // Configure PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600;700&display=swap');
-        
-        * {
+        body {
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            font-family: 'Noto Sans', sans-serif;
+            background-color: #f7f7f7;
+            color: #222;
         }
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #000000;
-            color: #ffffff;
-            min-height: 100vh;
-            padding: 40px 20px;
-            position: relative;
-            overflow-x: hidden;
+        header {
+            background-color: #000;
+            color: white;
+            padding: 1rem 2rem;
+            text-align: center;
         }
 
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 30% 40%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 70% 60%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 60%);
-            animation: drift 20s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        @keyframes drift {
-            0%, 100% { transform: rotate(0deg) scale(1); }
-            50% { transform: rotate(180deg) scale(1.1); }
+        h1 {
+            font-weight: 700;
+            margin: 0;
         }
 
         .container {
             max-width: 1200px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
+            margin: 2rem auto;
+            padding: 0 1rem;
         }
 
-        /* Header with Lexus styling */
-        .header {
-            text-align: center;
-            margin-bottom: 60px;
+        .filter-bar {
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
         }
 
-        .logo {
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 4px;
-            color: #666;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-
-        h1 {
-            font-size: 48px;
-            font-weight: 200;
-            letter-spacing: -1px;
-            margin-bottom: 10px;
-            background: linear-gradient(180deg, #ffffff 0%, #999999 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.2;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 16px;
-            font-weight: 300;
-            letter-spacing: 0.5px;
-        }
-
-        /* Upload section with premium feel */
-        .upload-section {
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 24px;
-            padding: 60px;
-            text-align: center;
-            margin-bottom: 40px;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: radial-gradient(circle at center, rgba(139, 92, 246, 0.05) 0%, transparent 70%);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .upload-section:hover::before {
-            opacity: 1;
-        }
-
-        .upload-section:hover {
-            transform: translateY(-2px);
-            border-color: rgba(255,255,255,0.12);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        }
-
-        .upload-section.dragover {
-            background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
-            border-color: rgba(139, 92, 246, 0.3);
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .upload-button {
-            background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-            color: white;
-            padding: 16px 48px;
-            border: none;
-            border-radius: 12px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: 0.5px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .upload-button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .upload-button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .upload-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(139, 92, 246, 0.3);
-        }
-
-        .upload-button:active {
-            transform: translateY(0);
-        }
-
-        /* Processing animation */
-        .processing {
-            display: none;
-            text-align: center;
-            margin: 60px 0;
-        }
-
-        .processing-spinner {
-            display: inline-block;
-            width: 60px;
-            height: 60px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-top-color: #8b5cf6;
-            border-radius: 50%;
-            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-            margin-bottom: 20px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* Results section */
-        .results-section {
-            display: none;
-            animation: fadeIn 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        @keyframes fadeIn {
-            from { 
-                opacity: 0; 
-                transform: translateY(20px);
-            }
-            to { 
-                opacity: 1; 
-                transform: translateY(0);
-            }
-        }
-
-        /* Summary cards with gradient borders */
-        .summary-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            margin-bottom: 60px;
-        }
-
-        .summary-card {
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border-radius: 20px;
-            padding: 32px;
-            text-align: center;
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .summary-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 20px;
-            padding: 1px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
-            -webkit-mask: 
-                linear-gradient(#fff 0 0) content-box, 
-                linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
-
-        .summary-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-        .summary-card h3 {
-            font-size: 36px;
-            font-weight: 200;
-            margin-bottom: 8px;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-        }
-
-        .summary-card p {
-            font-size: 12px;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
+        .filter-bar label {
+            font-size: 1rem;
             font-weight: 600;
         }
 
-        .summary-card:nth-child(1) h3 { 
-            background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .summary-card:nth-child(2) h3 { 
-            background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .summary-card:nth-child(3) h3 { 
-            background: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .summary-card:nth-child(4) h3 {
-            font-size: 18px;
-            font-weight: 400;
-        }
-
-        /* Vehicles table with modern styling */
-        .vehicles-table {
-            background: rgba(255,255,255,0.02);
-            border-radius: 20px;
-            overflow: hidden;
-            margin-bottom: 40px;
-            border: 1px solid rgba(255,255,255,0.06);
+        .filter-bar input[type="date"] {
+            padding: 0.5rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 250px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            background-color: white;
+            border: 1px solid #ddd;
+            overflow-x: auto;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eee;
+            text-align: left;
         }
 
         th {
-            background: rgba(255,255,255,0.03);
-            padding: 20px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 12px;
-            letter-spacing: 1.5px;
-            color: #666;
-            text-transform: uppercase;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        td {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            font-size: 14px;
-            color: #ccc;
-        }
-
-        tr {
-            transition: all 0.3s ease;
+            background-color: #f2f2f2;
+            font-weight: 700;
+            color: #444;
         }
 
         tr:hover {
-            background: rgba(255,255,255,0.03);
+            background-color: #fafafa;
         }
 
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        .color-badge {
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 500;
             display: inline-block;
-            padding: 6px 16px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 500;
-            background: rgba(139, 92, 246, 0.1);
-            color: #a78bfa;
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            letter-spacing: 0.5px;
         }
 
-        /* Model breakdown section */
-        .model-breakdown {
-            margin: 60px 0;
-        }
+        .badge.red { background-color: #f8d7da; color: #721c24; }
+        .badge.green { background-color: #d4edda; color: #155724; }
+        .badge.gray { background-color: #e2e3e5; color: #383d41; }
 
-        .model-breakdown h2 {
-            font-size: 24px;
-            font-weight: 300;
-            margin-bottom: 30px;
-            color: #ffffff;
-            letter-spacing: -0.5px;
-        }
-
-        .model-category {
-            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        }
-
-        .model-category:hover {
-            transform: translateX(4px);
-            border-color: rgba(139, 92, 246, 0.2);
-        }
-
-        .model-category h3 {
-            margin-bottom: 12px;
-            font-weight: 500;
-            font-size: 16px;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .model-count {
-            background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .model-category p {
-            font-size: 14px;
-            color: #999;
-            line-height: 1.8;
-        }
-
-        /* Export section */
-        .export-section {
-            margin: 40px 0;
+        .footer {
             text-align: center;
-        }
-
-        .export-button {
-            background: transparent;
-            color: #999;
-            padding: 14px 32px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-            margin: 0 12px;
-            letter-spacing: 0.5px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .export-button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .export-button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .export-button:hover {
-            transform: translateY(-2px);
-            color: #ffffff;
-            border-color: rgba(255,255,255,0.2);
-        }
-
-        .export-button.csv:hover {
-            border-color: rgba(16, 185, 129, 0.5);
-            color: #10b981;
-            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
-        }
-
-        .export-button.excel:hover {
-            border-color: rgba(59, 130, 246, 0.5);
-            color: #3b82f6;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
-        }
-
-        /* Messages */
-        .error-message, .success-message {
-            padding: 16px 24px;
-            border-radius: 12px;
-            margin: 20px 0;
-            display: none;
-            font-size: 14px;
-            font-weight: 500;
-            backdrop-filter: blur(10px);
-        }
-
-        .error-message {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-
-        .success-message {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #10b981;
-        }
-
-        /* Debug section */
-        .debug-section {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 12px;
-            padding: 20px;
-            margin: 20px 0;
-            display: none;
-        }
-
-        .debug-section h4 {
-            margin-bottom: 10px;
-            color: #fbbf24;
-            font-size: 14px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .debug-content {
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            white-space: pre-wrap;
-            word-break: break-all;
-            max-height: 200px;
-            overflow-y: auto;
-            background: rgba(0,0,0,0.3);
-            padding: 16px;
-            border-radius: 8px;
+            padding: 2rem;
+            font-size: 0.875rem;
             color: #999;
         }
 
-        /* Print styles */
-        @media print {
-            body {
-                background: white !important;
-                color: black !important;
-                padding: 0;
-            }
-
-            body::before {
-                display: none !important;
-            }
-
-            .header, .upload-section, .processing, .debug-section, .export-section, .error-message, .success-message {
-                display: none !important;
-            }
-
-            .container {
-                max-width: 100%;
-                padding: 20px;
-            }
-
-            .print-header {
-                display: block !important;
-                text-align: center;
-                margin-bottom: 30px;
-                border-bottom: 2px solid #000;
-                padding-bottom: 20px;
-            }
-
-            .print-header h1 {
-                color: black !important;
-                font-size: 24px;
-                margin-bottom: 10px;
-            }
-
-            .print-header .print-meta {
-                color: #666;
-                font-size: 14px;
-            }
-
-            .summary-cards {
-                display: grid !important;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 0;
-                margin-bottom: 30px;
-                page-break-after: auto;
-            }
-
-            .summary-card {
-                background: white !important;
-                border: 1px solid #ddd !important;
-                border-radius: 0 !important;
-                padding: 20px;
-                margin: -1px;
-            }
-
-            .summary-card h3 {
-                color: black !important;
-                -webkit-text-fill-color: black !important;
-                font-size: 28px;
-            }
-
-            .summary-card p {
-                color: #666 !important;
-            }
-
-            .model-breakdown {
-                page-break-before: auto;
-                margin: 30px 0;
-            }
-
-            .model-category {
-                background: white !important;
-                border: 1px solid #ddd !important;
-                margin-bottom: 10px;
-                page-break-inside: avoid;
-            }
-
-            .model-category h3, .model-category p {
-                color: black !important;
-            }
-
-            .model-count {
-                background: #f0f0f0 !important;
-                color: black !important;
-            }
-
-            .vehicles-table {
-                background: white !important;
-                border: 1px solid #ddd !important;
-                page-break-before: auto;
-            }
-
-            table {
+        @media screen and (max-width: 768px) {
+            table, thead, tbody, th, td, tr {
+                display: block;
                 width: 100%;
-                border-collapse: collapse;
             }
 
-            th {
-                background: #f8f8f8 !important;
-                color: black !important;
-                border: 1px solid #ddd !important;
-                padding: 10px;
-                font-weight: bold;
+            thead tr {
+                display: none;
+            }
+
+            tbody tr {
+                margin-bottom: 1rem;
+                border: 1px solid #ddd;
+                border-radius: 6px;
+                padding: 0.5rem;
+                background-color: white;
             }
 
             td {
-                color: black !important;
-                border: 1px solid #ddd !important;
-                padding: 8px;
+                padding: 0.5rem;
+                border-bottom: none;
+                position: relative;
+                padding-left: 50%;
+                text-align: right;
             }
 
-            .color-badge {
-                background: #f0f0f0 !important;
-                color: black !important;
-                border: 1px solid #ddd !important;
+            td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 1rem;
+                width: 45%;
+                font-weight: bold;
+                text-align: left;
+                white-space: nowrap;
             }
-
-            tr:hover {
-                background: white !important;
-            }
-
-            .hide-on-print {
-                display: none !important;
-            }
-
-            .print-only {
-                display: block !important;
-            }
-        }
-
-        .print-header {
-            display: none;
-        }
-
-        /* Print button styles */
-        .print-button {
-            background: transparent;
-            color: #999;
-            padding: 14px 32px;
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-            margin: 0 12px;
-            letter-spacing: 0.5px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .print-button::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .print-button:hover::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .print-button:hover {
-            transform: translateY(-2px);
-            color: #ffffff;
-            border-color: rgba(255,255,255,0.2);
-        }
-
-        .print-button.summary:hover {
-            border-color: rgba(236, 72, 153, 0.5);
-            color: #ec4899;
-            box-shadow: 0 10px 30px rgba(236, 72, 153, 0.2);
-        }
-
-        .print-button.full:hover {
-            border-color: rgba(139, 92, 246, 0.5);
-            color: #8b5cf6;
-            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>Lexus Allocation Analyzer</h1>
+    </header>
     <div class="container">
-        <div class="header">
-            <div class="logo">LEXUS</div>
-            <h1>Allocation Analyzer</h1>
-            <p class="subtitle">Transform your allocation PDFs into actionable insights</p>
+        <div class="filter-bar">
+            <label for="filter-date">Filter by BOS Date:</label>
+            <input type="date" id="filter-date" name="filter-date" onchange="filterByDate()">
         </div>
 
-        <div class="upload-section" id="uploadSection">
-            <input type="file" id="fileInput" class="file-input" accept=".pdf">
-            <label for="fileInput" class="upload-button">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
-                Upload Allocation PDF
-            </label>
-            <p style="margin-top: 24px; color: #666; font-size: 14px;">Drag and drop or click to browse</p>
-        </div>
-
-        <div class="processing" id="processingSection">
-            <div class="processing-spinner"></div>
-            <p>Processing PDF... <span id="processingStatus"></span></p>
-        </div>
-
-        <div class="error-message" id="errorMessage"></div>
-        <div class="success-message" id="successMessage"></div>
-
-        <div class="results-section" id="resultsSection">
-            <div class="print-header">
-                <h1>LEXUS ALLOCATION REPORT</h1>
-                <div class="print-meta">
-                    <span id="printDealer"></span> | 
-                    <span id="printAllocation"></span> | 
-                    <span id="printDate"></span>
-                </div>
-            </div>
-
-            <div class="summary-cards">
-                <div class="summary-card">
-                    <h3 id="totalVehicles">0</h3>
-                    <p>Total Vehicles</p>
-                </div>
-                <div class="summary-card">
-                    <h3 id="totalModels">0</h3>
-                    <p>Different Models</p>
-                </div>
-                <div class="summary-card">
-                    <h3 id="allocation">-</h3>
-                    <p>Allocation #</p>
-                </div>
-                <div class="summary-card">
-                    <h3 id="dealer">-</h3>
-                    <p>Dealer</p>
-                </div>
-            </div>
-
-            <div class="model-breakdown" id="modelBreakdown"></div>
-
-            <div class="export-section">
-                <button class="print-button summary" onclick="printSummary()">
-                    🖨️ Print Summary
-                </button>
-                <button class="print-button full" onclick="printFull()">
-                    📋 Print Full Report
-                </button>
-                <button class="export-button csv" onclick="exportToCSV()">
-                    📄 Export to CSV
-                </button>
-                <button class="export-button excel" onclick="exportToExcel()">
-                    📊 Export to Excel
-                </button>
-            </div>
-
-            <div class="vehicles-table" id="vehiclesTable">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Model</th>
-                            <th>Description</th>
-                            <th>Exterior Color</th>
-                            <th>Interior Color</th>
-                            <th>BOS Date</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="vehiclesList">
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <table id="allocation-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Model</th>
+                    <th>Description</th>
+                    <th>Exterior</th>
+                    <th>Interior</th>
+                    <th>BOS Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data Rows Go Here -->
+            </tbody>
+        </table>
+    </div>
+    <div class="footer">
+        &copy; Priority Lexus Virginia Beach
     </div>
 
     <script>
-        // Model codes mapping
-        const modelCodes = {
-            '9000': 'ES 350 Base FWD',
-            '9002': 'ES 350 Luxury FWD',
-            '9004': 'ES 350 Ultra Luxury FWD',
-            '9005': 'ES 350 F Sport Handling FWD',
-            '9006': 'ES 350 F Sport Design FWD',
-            '9012': 'ES 250 Base AWD',
-            '9013': 'ES 250 Luxury AWD',
-            '9014': 'ES 250 Ultra Luxury AWD',
-            '9015': 'ES 250 F Sport Design AWD',
-            '9040': 'ES 300h Base FWD',
-            '9042': 'ES 300h Luxury FWD',
-            '9044': 'ES 300h Ultra Luxury FWD',
-            '9045': 'ES 300h F Sport Design FWD',
-            '9046': 'ES 300h F Sport Handling FWD',
-            '9120': 'LS500 RWD',
-            '9122': 'LS 500 F Sport RWD',
-            '9126': 'LS500AWD',
-            '9128': 'LS 500 F Sport AWD',
-            '9146': 'LS 500h AWD with Lexus Teammate',
-            '9202': 'RC300RWD',
-            '9203': 'RC 300 F Sport RWD',
-            '9206': 'RC300AWD',
-            '9207': 'RC 300 F Sport AWD',
-            '9212': 'RC350RWD',
-            '9213': 'RC 350 F Sport RWD',
-            '9216': 'RC350AWD',
-            '9217': 'RC 350 F Sport AWD',
-            '9225': 'RCF',
-            '9226': 'RC FTrack Edition',
-            '9260': 'LC500',
-            '9262': 'LC 500 Convertible',
-            '9264': 'LC 500h',
-            '9350': 'TX 350 Base FWD',
-            '9351': 'TX 350 Base AWD',
-            '9352': 'TX 350 Premium FWD',
-            '9353': 'TX 350 Premium AWD',
-            '9354': 'TX 350 Luxury FWD',
-            '9355': 'TX 350 Luxury AWD',
-            '9357': 'TX 350 F SPORT AWD',
-            '9360': 'TX 500h F SPORT Performance Premium AWD',
-            '9361': 'TX 500h F SPORT Performance Luxury AWD',
-            '9365': 'TX 550h+ Luxury AWD',
-            '9400': 'RX 350 Standard FWD',
-            '9401': 'RX 350 Premium FWD',
-            '9402': 'RX 350 Premium+ FWD',
-            '9403': 'RX 350 Luxury FWD',
-            '9410': 'RX 350 Standard AWD',
-            '9411': 'RX 350 Premium AWD',
-            '9412': 'RX 350 Premium+ AWD',
-            '9413': 'RX 350 Luxury AWD',
-            '9415': 'RX 350 F SPORT Handling AWD',
-            '9443': 'RX 450h+ Luxury AWD',
-            '9450': 'RX 350h Standard AWD',
-            '9451': 'RX 350h Premium AWD',
-            '9452': 'RX 350h Premium+ AWD',
-            '9453': 'RX 350h Luxury AWD',
-            '9458': 'RX 500h F SPORT Performance AWD',
-            '9502': 'IS300RWD',
-            '9504': 'IS 350 F Sport Design RWD',
-            '9506': 'IS300AWD',
-            '9508': 'IS 350 F Sport Design AWD',
-            '9510': 'IS 350 F Sport RWD',
-            '9516': 'IS 350 F Sport AWD',
-            '9554': 'IS 500 Base',
-            '9556': 'IS 500 Premium',
-            '9620': 'LX 600 Base',
-            '9621': 'LX 600 Premium',
-            '9622': 'LX 600 F Sport Handling',
-            '9623': 'LX 600 Luxury',
-            '9624': 'LX 600 Ultra Luxury',
-            '9626': 'LX 700h Ultra Luxury',
-            '9701': 'GX 550 Premium',
-            '9702': 'GX 550 Premium+',
-            '9703': 'GX 550 Luxury',
-            '9704': 'GX 550 Luxury+',
-            '9705': 'GX 550 Overtrail',
-            '9706': 'GX 550 Overtrail+',
-            '9721': 'UX 300h Base FWD',
-            '9723': 'UX 300h Premium FWD',
-            '9725': 'UX 300h F Sport Design FWD',
-            '9727': 'UX 300h F Sport Handling FWD',
-            '9732': 'UX 300h Base AWD',
-            '9733': 'UX 300h Premium AWD',
-            '9735': 'UX 300h F Sport Design AWD',
-            '9738': 'UX 300h F Sport Handling AWD',
-            '9820': 'NX 250 Base FWD',
-            '9821': 'NX 250 Premium FWD',
-            '9824': 'NX 250 Base AWD',
-            '9825': 'NX 250 Premium AWD',
-            '9834': 'NX 350 Base AWD',
-            '9835': 'NX 350 Premium AWD',
-            '9836': 'NX 350 Luxury AWD',
-            '9838': 'NX 350 F Sport AWD',
-            '9844': 'NX 350h Base AWD',
-            '9845': 'NX 350h Premium AWD',
-            '9846': 'NX 350h Luxury AWD',
-            '9852': 'NX 450h+ Luxury AWD',
-            '9854': 'NX 450h+ F Sport Luxury AWD',
-            '9902': 'RZ 450e Premium AWD w/ 18" Wheel',
-            '9903': 'RZ 450e Premium AWD w/ 20" Wheel',
-            '9904': 'RZ 450e Luxury AWD w/ 20" Wheels',
-            '9906': 'RZ 300e Premium FWD w/ 18" Wheels',
-            '9907': 'RZ 300e Premium FWD w/ 20" Wheels',
-            '9908': 'RZ 300e Luxury FWD w/ 20" Wheels'
-        };
-
-        // Color codes mapping
-        const colorCodes = {
-            '0083': 'ULTRA WHITE',
-            '0085': 'EMINENT WHITE PEARL',
-            '0089': 'WIND CHILL PEARL',
-            '0212': 'OBSIDIAN',
-            '0223': 'CAVIAR',
-            '01H9': 'NEBULA GRAY PEARL',
-            '01J7': 'ATOMIC SILVER',
-            '01J9': 'CELESTIAL SILVER METALLIC',
-            '01L1': 'CLOUDBURST GRAY',
-            '01L2': 'IRIDIUM',
-            '01L8': 'INCOGNITO',
-            '03R1': 'MATADOR RED MICA',
-            '04X8': 'MOONBEAM BEIGE METALLIC',
-            '04Y5': 'COPPER CREST',
-            '06X0': 'SUNLIT GREEN',
-            '06X4': 'NORI GREEN PEARL',
-            '08X5': 'NIGHTFALL MICA'
-        };
-
-        // Interior color codes mapping
-        const interiorCodes = {
-            '00': 'BLACK',
-            '01': 'BLACK',
-            '02': 'BLACK',
-            '10': 'NOBLE BROWN',
-            '11': 'GLAZED CARAMEL',
-            '12': 'NOBLE BROWN',
-            '20': 'PARCHMENT',
-            '21': 'PARCHMENT',
-            '22': 'PARCHMENT',
-            '24': 'SANDSTONE',
-            '32': 'RIOJA RED',
-            '40': 'BIRCH',
-            '41': 'BIRCH',
-            '42': 'BIRCH',
-            '43': 'BIRCH',
-            '46': 'PALOMINO',
-            '60': 'OCHRE',
-            '71': 'MACADAMIA',
-            '72': 'MACADAMIA'
-        };
-
-        let uploadSection = document.getElementById('uploadSection');
-        let fileInput = document.getElementById('fileInput');
-        let resultsSection = document.getElementById('resultsSection');
-        let processingSection = document.getElementById('processingSection');
-        let processingStatus = document.getElementById('processingStatus');
-        let errorMessage = document.getElementById('errorMessage');
-        let successMessage = document.getElementById('successMessage');
-        let currentData = null;
-
-        // Drag and drop functionality
-        uploadSection.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadSection.classList.add('dragover');
-        });
-
-        uploadSection.addEventListener('dragleave', () => {
-            uploadSection.classList.remove('dragover');
-        });
-
-        uploadSection.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadSection.classList.remove('dragover');
-            
-            if (e.dataTransfer.files.length > 0) {
-                handleFile(e.dataTransfer.files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
-        });
-
-        async function handleFile(file) {
-            if (file.type !== 'application/pdf') {
-                showError('Please upload a PDF file');
-                return;
-            }
-
-            hideMessages();
-            processingSection.style.display = 'block';
-            resultsSection.style.display = 'none';
-            
-            try {
-                const arrayBuffer = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-                
-                processingStatus.textContent = `Found ${pdf.numPages} pages`;
-                
-                let allText = '';
-                
-                // Extract text from all pages
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    processingStatus.textContent = `Processing page ${pageNum} of ${pdf.numPages}`;
-                    const page = await pdf.getPage(pageNum);
-                    const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map(item => item.str).join(' ');
-                    allText += pageText + '\n';
-                }
-                
-                // Parse the allocation data
-                const allocationData = parseAllocationData(allText);
-                
-                if (allocationData.vehicles.length === 0) {
-                    showError('No vehicles found in the PDF. Please check if this is a valid allocation document.');
-                    processingSection.style.display = 'none';
-                    return;
-                }
-                
-                currentData = allocationData;
-                displayResults(allocationData);
-                showSuccess(`Successfully processed ${allocationData.vehicles.length} vehicles`);
-                processingSection.style.display = 'none';
-                
-            } catch (error) {
-                console.error('Error processing PDF:', error);
-                showError('Error processing PDF: ' + error.message);
-                processingSection.style.display = 'none';
-            }
-        }
-
-        function parseAllocationData(text) {
-            const data = {
-                allocation: '',
-                dealer: '',
-                vehicles: []
-            };
-            
-            // Extract allocation number
-            const allocMatch = text.match(/Allocation\s*#?\s*:\s*(\d+)/i);
-            if (allocMatch) {
-                data.allocation = allocMatch[1];
-            }
-            
-            // Extract dealer info - look for PRIORITY LEXUS VIRGNA BCH pattern
-            const dealerMatch = text.match(/Dealer:\s*\d+-([^\n]+)/i);
-            if (dealerMatch) {
-                const dealerText = dealerMatch[1].trim();
-                // Convert abbreviated name to full name
-                if (dealerText.includes('PRIORITY LEXUS VIRGNA BCH') || dealerText.includes('PRIORITY LEXUS')) {
-                    data.dealer = 'PRIORITY LEXUS VIRGINIA BEACH';
+        function filterByDate() {
+            const selectedDate = document.getElementById("filter-date").value;
+            const rows = document.querySelectorAll("#allocation-table tbody tr");
+            rows.forEach(row => {
+                const bosCell = row.cells[5];
+                if (!selectedDate || bosCell.textContent === selectedDate) {
+                    row.style.display = "";
                 } else {
-                    data.dealer = dealerText;
+                    row.style.display = "none";
                 }
-            }
-            
-            // Parse vehicle lines
-            // Look for patterns like: 1 071 9000G SU33J047 7 06X0-43 02660 Y FT OT PM RF TP XF DF KG 2T 08-11
-            const vehiclePattern = /(\d{1,2})\s+(0\d{2})\s+(9\d{3}[A-Z]?)\s+([A-Z0-9]{8,10})\s+\d+\s+([A-Z]?\s*)([0-9A-Z]{4}-\d{2})\s+\d{5}\s+[YN]\s+.*?\s+([\d-]{5,}|PORT)/g;
-            
-            let match;
-            while ((match = vehiclePattern.exec(text)) !== null) {
-                const order = match[1];
-                const allocation = match[2];
-                const model = match[3];
-                const serial = match[4];
-                const colorCode = match[6];
-                const bos = match[7];
-                
-                // Extract model code (first 4 digits)
-                const modelCode = model.substring(0, 4);
-                const colorPrefix = colorCode.split('-')[0];
-                const interiorCode = colorCode.split('-')[1];
-                
-                data.vehicles.push({
-                    order: parseInt(order),
-                    allocation: allocation,
-                    model: model,
-                    serial: serial,
-                    modelName: modelCodes[modelCode] || `Unknown Model (${modelCode})`,
-                    colorCode: colorCode,
-                    exteriorColor: colorCodes[colorPrefix] || `Unknown Color (${colorPrefix})`,
-                    interiorColor: interiorCodes[interiorCode] || `Unknown Interior (${interiorCode})`,
-                    bos: bos,
-                    status: bos === 'PORT' ? 'At Port' : 'Scheduled'
-                });
-            }
-            
-            // Sort vehicles by order number
-            data.vehicles.sort((a, b) => a.order - b.order);
-            
-            return data;
-        }
-
-        function displayResults(data) {
-            // Update summary cards
-            document.getElementById('totalVehicles').textContent = data.vehicles.length;
-            document.getElementById('totalModels').textContent = new Set(data.vehicles.map(v => v.model.substring(0, 4))).size;
-            document.getElementById('allocation').textContent = data.allocation || 'N/A';
-            document.getElementById('dealer').textContent = data.dealer;
-
-            // Update print header info
-            document.getElementById('printDealer').textContent = data.dealer;
-            document.getElementById('printAllocation').textContent = 'Allocation #' + data.allocation;
-            document.getElementById('printDate').textContent = new Date().toLocaleDateString();
-
-            // Group vehicles by model category
-            const modelGroups = {};
-            data.vehicles.forEach(v => {
-                const category = getModelCategory(v.model);
-                if (!modelGroups[category]) {
-                    modelGroups[category] = [];
-                }
-                modelGroups[category].push(v);
             });
-
-            // Display model breakdown
-            const modelBreakdown = document.getElementById('modelBreakdown');
-            modelBreakdown.innerHTML = '<h2 style="margin-bottom: 20px;">Model Breakdown</h2>';
-            
-            Object.entries(modelGroups).forEach(([category, vehicles]) => {
-                const categoryDiv = document.createElement('div');
-                categoryDiv.className = 'model-category';
-                
-                // Count each specific model
-                const modelCounts = {};
-                vehicles.forEach(v => {
-                    const modelCode = v.model.substring(0, 4);
-                    if (!modelCounts[modelCode]) {
-                        modelCounts[modelCode] = { count: 0, name: v.modelName };
-                    }
-                    modelCounts[modelCode].count++;
-                });
-                
-                const modelDetails = Object.entries(modelCounts)
-                    .map(([code, info]) => `${info.count}x ${info.name}`)
-                    .join(', ');
-                
-                categoryDiv.innerHTML = `
-                    <h3>${category} <span class="model-count">${vehicles.length} units</span></h3>
-                    <p>${modelDetails}</p>
-                `;
-                modelBreakdown.appendChild(categoryDiv);
-            });
-
-            // Display vehicles table
-            const vehiclesList = document.getElementById('vehiclesList');
-            vehiclesList.innerHTML = '';
-            
-            data.vehicles.forEach(v => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${v.order}</td>
-                    <td>${v.model}</td>
-                    <td>${v.modelName}</td>
-                    <td><span class="color-badge">${v.exteriorColor}</span></td>
-                    <td><span class="color-badge">${v.interiorColor}</span></td>
-                    <td>${v.bos}</td>
-                    <td>${v.status}</td>
-                `;
-                vehiclesList.appendChild(row);
-            });
-
-            resultsSection.style.display = 'block';
-        }
-
-        function printSummary() {
-            // Hide the vehicles table for summary print
-            const vehiclesTable = document.getElementById('vehiclesTable');
-            vehiclesTable.style.display = 'none';
-            
-            window.print();
-            
-            // Show the table again after printing
-            setTimeout(() => {
-                vehiclesTable.style.display = 'block';
-            }, 100);
-        }
-
-        function printFull() {
-            // Everything is visible for full print
-            window.print();
-        }
-
-        function getModelCategory(model) {
-            const modelCode = model.substring(0, 4);
-            
-            // Check specific model codes first
-            if (modelCode >= '9000' && modelCode <= '9046') return 'ES';
-            if (modelCode >= '9120' && modelCode <= '9146') return 'LS';
-            if (modelCode >= '9202' && modelCode <= '9226') return 'RC';
-            if (modelCode >= '9260' && modelCode <= '9264') return 'LC';
-            if (modelCode >= '9350' && modelCode <= '9365') return 'TX';
-            if (modelCode >= '9400' && modelCode <= '9458') return 'RX';
-            if (modelCode >= '9502' && modelCode <= '9556') return 'IS';
-            if (modelCode >= '9620' && modelCode <= '9626') return 'LX';
-            if (modelCode >= '9701' && modelCode <= '9706') return 'GX';
-            if (modelCode >= '9721' && modelCode <= '9738') return 'UX';
-            if (modelCode >= '9820' && modelCode <= '9854') return 'NX';
-            if (modelCode >= '9902' && modelCode <= '9908') return 'RZ';
-            
-            return 'Other';
-        }
-
-        function exportToCSV() {
-            if (!currentData) return;
-
-            let csv = 'Order,Model Code,Model Description,Exterior Color,Interior Color,BOS Date,Status\n';
-            
-            currentData.vehicles.forEach(v => {
-                csv += `${v.order},"${v.model}","${v.modelName}","${v.exteriorColor}","${v.interiorColor}","${v.bos}","${v.status}"\n`;
-            });
-
-            // Add summary at the end
-            csv += '\n\nAllocation Summary\n';
-            csv += `Allocation Number,${currentData.allocation}\n`;
-            csv += `Dealer,${currentData.dealer}\n`;
-            csv += `Total Vehicles,${currentData.vehicles.length}\n`;
-            
-            // Group by model for summary
-            const modelSummary = {};
-            currentData.vehicles.forEach(v => {
-                const modelCode = v.model.substring(0, 4);
-                if (!modelSummary[modelCode]) {
-                    modelSummary[modelCode] = { name: v.modelName, count: 0 };
-                }
-                modelSummary[modelCode].count++;
-            });
-            
-            csv += '\nModel Summary\n';
-            Object.entries(modelSummary).forEach(([code, info]) => {
-                csv += `"${info.name}",${info.count}\n`;
-            });
-
-            downloadFile(csv, `lexus_allocation_${currentData.allocation}.csv`, 'text/csv');
-            showSuccess('CSV file downloaded successfully!');
-        }
-
-        function exportToExcel() {
-            if (!currentData) return;
-
-            // Create a simple HTML table that Excel can read
-            let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">';
-            html += '<head><meta charset="UTF-8"><style>table { border-collapse: collapse; } th, td { border: 1px solid black; padding: 5px; } th { background-color: #f0f0f0; font-weight: bold; }</style></head>';
-            html += '<body>';
-            
-            // Header information
-            html += '<h2>Lexus Allocation #' + currentData.allocation + '</h2>';
-            html += '<h3>' + currentData.dealer + '</h3>';
-            html += '<p>Generated: ' + new Date().toLocaleString() + '</p>';
-            
-            // Main data table
-            html += '<table>';
-            html += '<tr><th>Order</th><th>Model Code</th><th>Model Description</th><th>Exterior Color</th><th>Interior Color</th><th>BOS Date</th><th>Status</th></tr>';
-            
-            currentData.vehicles.forEach(v => {
-                html += `<tr>
-                    <td>${v.order}</td>
-                    <td>${v.model}</td>
-                    <td>${v.modelName}</td>
-                    <td>${v.exteriorColor}</td>
-                    <td>${v.interiorColor}</td>
-                    <td>${v.bos}</td>
-                    <td>${v.status}</td>
-                </tr>`;
-            });
-            
-            html += '</table>';
-            
-            // Summary section
-            html += '<br><br><h3>Summary</h3>';
-            html += '<table>';
-            html += `<tr><td><strong>Total Vehicles</strong></td><td>${currentData.vehicles.length}</td></tr>`;
-            html += `<tr><td><strong>Different Models</strong></td><td>${new Set(currentData.vehicles.map(v => v.model.substring(0, 4))).size}</td></tr>`;
-            
-            // Model breakdown
-            const modelSummary = {};
-            currentData.vehicles.forEach(v => {
-                const modelCode = v.model.substring(0, 4);
-                if (!modelSummary[modelCode]) {
-                    modelSummary[modelCode] = { name: v.modelName, count: 0 };
-                }
-                modelSummary[modelCode].count++;
-            });
-            
-            html += '</table>';
-            html += '<br><h3>Model Breakdown</h3>';
-            html += '<table>';
-            html += '<tr><th>Model</th><th>Quantity</th></tr>';
-            
-            Object.entries(modelSummary)
-                .sort((a, b) => b[1].count - a[1].count)
-                .forEach(([code, info]) => {
-                    html += `<tr><td>${info.name}</td><td>${info.count}</td></tr>`;
-                });
-            
-            html += '</table>';
-            html += '</body></html>';
-
-            downloadFile(html, `lexus_allocation_${currentData.allocation}.xls`, 'application/vnd.ms-excel');
-            showSuccess('Excel file downloaded successfully!');
-        }
-
-        function downloadFile(content, filename, mimeType) {
-            const blob = new Blob([content], { type: mimeType });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-        }
-
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            successMessage.style.display = 'none';
-        }
-
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-        }
-
-        function hideMessages() {
-            errorMessage.style.display = 'none';
-            successMessage.style.display = 'none';
         }
     </script>
 </body>
