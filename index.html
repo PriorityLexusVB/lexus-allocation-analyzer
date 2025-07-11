@@ -599,7 +599,26 @@
                 </button>
             </div>
 
-            <div class="vehicles-table">
+            
+<div style="margin-bottom: 20px; text-align: right;">
+    <label for="bosFilter" style="font-size: 14px; color: #ccc; margin-right: 8px;">Filter by BOS Date:</label>
+    <input type="date" id="bosFilter" style="padding: 6px 10px; border-radius: 6px; border: 1px solid #666; background: #111; color: #fff;">
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const bosInput = document.getElementById('bosFilter');
+        bosInput.addEventListener('input', function () {
+            const filterDate = this.value;
+            const rows = document.querySelectorAll('#vehiclesList tr');
+            rows.forEach(row => {
+                const bosCell = row.children[5]; // BOS column
+                const show = !filterDate || (bosCell && bosCell.textContent.includes(filterDate));
+                row.style.display = show ? '' : 'none';
+            });
+        });
+    });
+</script>
+<div class="vehicles-table">
                 <table>
                     <thead>
                         <tr>
